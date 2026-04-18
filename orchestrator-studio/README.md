@@ -1,233 +1,224 @@
 # Orchestrator Studio
 
-A small **command-center** for the [`agents-platform`](../agents-platform) package: a **React** UI plus a structured **Express** API that lists agents, validates requests, rate-limits writes, and runs the OpenAI Agents SDK with sensible timeouts.
+A **command-center** for the [`agents-platform`](../agents-platform) package: a **React** UI plus an **Express** API that lists agents, validates requests, rate-limits writes, and runs the [OpenAI Agents SDK](https://openai.github.io/openai-agents-js/) with timeouts and concurrency limits.
+
+## Screenshots
+
+Place PNG/WebP files in [`docs/screenshots/`](./docs/screenshots/) (this folder is tracked; large binaries stay out of history if you prefer Git LFS). Suggested names:
+
+| File | What to capture |
+| ---- | ---------------- |
+| `home.png` | **Home** tab — hero, features, or full page |
+| `console.png` | **Console** tab — brief + transcript after a run |
+| `tools.png` | **Tools** tab — grid + workspace |
+
+**Home**
+
+![Orchestrator Studio — Home tab](./docs/screenshots/home.png)
+
+**Console** (unified orchestrator)
+
+![Orchestrator Studio — Console tab](./docs/screenshots/console.png)
+
+**Tools** (specialist agents)
+
+![Orchestrator Studio — Tools tab](./docs/screenshots/tools.png)
+
+> If images are missing locally, you’ll see a broken icon in some viewers until you add the files above (or adjust the paths).
+
+---
 
 ## Repository layout
 
 ```text
 orchestrator-studio/
-├── README.md                 ← you are here
+├── README.md
+├── docs/
+│   └── screenshots/          # optional UI captures (see Screenshots)
 ├── index.html
-├── vite.config.ts            # dev server + /api proxy → backend
+├── vite.config.ts            # dev server; proxies /api → backend
 ├── package.json
 ├── tsconfig.json
-├── server/                   # Express backend
-│   ├── index.ts              # process entry (listen)
-│   ├── app.ts                # middleware + mount routes
-│   ├── config/
-│   │   └── env.ts            # dotenv paths + typed config
+├── server/                   # Express API
+│   ├── index.ts
+│   ├── app.ts
+│   ├── config/env.ts
 │   ├── middleware/
-│   │   ├── requestContext.ts # x-request-id
-│   │   ├── requestLogger.ts
-│   │   ├── rateLimit.ts      # per-IP window (POST only)
-│   │   ├── notFound.ts
-│   │   └── errorHandler.ts
 │   ├── routes/
-│   │   ├── index.ts          # composes routers
-│   │   ├── health.ts         # GET /health, /ready
-│   │   ├── meta.ts           # GET /meta
-│   │   ├── agents.ts         # GET /agents, /agents/:id
-│   │   └── run.ts            # POST /run
-│   ├── services/
-│   │   └── agentService.ts   # thin wrapper over agents-platform
-│   ├── types/
-│   │   └── api.ts
+│   ├── services/agentService.ts
+│   ├── types/api.ts
 │   └── utils/
-│       ├── asyncHandler.ts
-│       ├── requestId.ts
-│       └── semaphore.ts      # max concurrent agent runs
-└── src/                      # Vite + React frontend
-    ├── main.tsx              # ThemeProvider → App
-    ├── App.tsx               # Router + AppStateProvider
-    ├── layout/
-    │   └── AppShell.tsx      # masthead, tab nav, <Outlet />
-    ├── pages/
-    │   ├── HomePage.tsx      # overview + diagram + CTAs
-    │   ├── ConsolePage.tsx # unified orchestrator only
-    │   └── ToolsPage.tsx    # specialist grid + run workspace
-    ├── context/
-    │   └── AppStateContext.tsx
-    ├── hooks/
-    │   └── useAgentRunner.ts
-    ├── theme/
-    │   └── ThemeProvider.tsx
+└── src/                      # React app
+    ├── main.tsx
+    ├── App.tsx
+    ├── layout/AppShell.tsx
+    ├── pages/                # HomePage, ConsolePage, ToolsPage
+    ├── context/AppStateContext.tsx
+    ├── hooks/useAgentRunner.ts
+    ├── theme/ThemeProvider.tsx
     ├── api/
-    │   ├── client.ts
-    │   └── types.ts
     ├── components/
-    │   ├── NavTabs.tsx
-    │   ├── ToolsGrid.tsx
-    │   ├── HeroDiagram.tsx
-    │   ├── TopBar.tsx
-    │   ├── ThemeToggle.tsx
-    │   └── Workspace.tsx
     └── constants/
-        ├── examplePrompts.ts
-        └── orchestrator.ts   # task-orchestrator id
 ```
+
+---
 
 ## Prerequisites
 
 - **Node.js** 18+ (20+ recommended)
-- **npm** 9+ (workspaces / local `file:` deps)
-- An **OpenAI API key** with access to models used by `@openai/agents`
+- **npm** 9+
+- **`OPENAI_API_KEY`** for `@openai/agents`
 
-## Setup
+---
 
-### 1. Install dependencies
+## Setup (quick)
 
-From the **monorepo root** (parent of this folder):
+### 1. Install from monorepo root
 
 ```bash
 cd "/path/to/Ai Agent sdk"
 npm install
 ```
 
-This installs `agents-platform` and `orchestrator-studio` and links them together.
-
-### 2. Build the agents package
-
-The API imports the compiled **`agents-platform`** output:
+### 2. Build `agents-platform` (required for the API)
 
 ```bash
 npm run build -w agents-platform
 ```
 
-### 3. Configure environment
+### 3. Environment
 
-Create a **`.env`** file at the **repository root** (recommended) or inside `orchestrator-studio/`.
+Create **`.env`** at the **repository root** (recommended) or in `orchestrator-studio/`.
 
-**Required:**
+| Variable | Required | Description |
+| -------- | -------- | ----------- |
+| `OPENAI_API_KEY` | Yes | OpenAI API key |
 
-| Variable | Description |
-| ------------------- | ------------------------------------------------ |
-| `OPENAI_API_KEY`    | OpenAI key for `@openai/agents`                  |
+Optional API tuning: `PORT` (default `8787`), `CORS_ORIGIN`, `BODY_LIMIT`, `MAX_CONCURRENT_RUNS`, `RUN_SOFT_TIMEOUT_MS`, `RATE_LIMIT_WINDOW_MS`, `RATE_LIMIT_MAX`, `TRUST_PROXY`. See table in an earlier version or `server/config/env.ts`.
 
-**Optional (API / ops):**
+Load order: repo root `.env`, then `orchestrator-studio/.env` (later wins).
 
-| Variable | Default | Description                                      |
-| ------------------------ | ------- | ------------------------------------------------ |
-| `PORT`                   | `8787`  | API listen port                                  |
-| `NODE_ENV`               | —       | `development` / `production`                     |
-| `CORS_ORIGIN`          | `*`     | Comma-separated allowed origins, or `*`        |
-| `BODY_LIMIT`           | `2mb`   | Max JSON body size                               |
-| `MAX_CONCURRENT_RUNS`  | `4`     | Process-wide cap on parallel `/api/run`          |
-| `RUN_SOFT_TIMEOUT_MS`  | `120000`| Soft timeout for a single agent run              |
-| `RATE_LIMIT_WINDOW_MS` | `60000` | Rate-limit window for mutating requests          |
-| `RATE_LIMIT_MAX`       | `30`    | Max POSTs per IP per window (GETs not limited)   |
-| `TRUST_PROXY`          | —       | Set to `1` if behind a reverse proxy (for `req.ip`) |
-
-The server loads env in this order: **repo root `.env`**, then **`orchestrator-studio/.env`** (later overrides earlier).
-
-### 4. Run in development
-
-You **do not** need two terminals for normal use: **`npm run dev`** starts **both** the Express API and the Vite UI (`concurrently` in `package.json`).
-
-From **orchestrator-studio** (or use the root script):
+### 4. Run (one command = API + UI)
 
 ```bash
 cd orchestrator-studio
 npm run dev
 ```
 
-- **UI:** [http://localhost:5173](http://localhost:5173) (Vite)
+- **App:** [http://localhost:5173](http://localhost:5173)
 - **API:** [http://127.0.0.1:8787](http://127.0.0.1:8787)
 
-Vite proxies **`/api/*`** to the API during dev.
-
-**Optional — debug one process only:**
-
-```bash
-npm run dev:api    # Express only
-npm run dev:ui     # Vite only
-```
-
-From **monorepo root:**
+From repo root:
 
 ```bash
 npm run dev -w orchestrator-studio
 ```
 
-### 5. Production build (static UI)
+**Debug one process only:** `npm run dev:api` or `npm run dev:ui`.
+
+### 5. Production UI build
 
 ```bash
 cd orchestrator-studio
 npm run build
 ```
 
-Outputs static assets to `orchestrator-studio/dist/`. Serve that folder with any static host **and** run the API separately (same origin or configure CORS). For a single origin in production, put Vite’s `dist` behind nginx and **reverse-proxy** `/api` to the Node process.
+Static output: `dist/`. Serve it and run the API separately; put **`/api`** behind a reverse proxy to the Node server, or configure CORS.
 
-## How to use
+---
 
-### Web UI
+## How to use (step by step)
 
-Routes (React Router):
+### First launch
 
-| Path | Tab | Purpose |
-| ---- | --- | ------- |
-| `/` | **Home** | Overview, stats, inline diagram, links to Console and Tools |
-| `/console` | **Console** | Single **task-orchestrator** agent — one brief, delegates to specialists |
-| `/tools` | **Tools** | Grid of **specialist** agents (everything except the orchestrator); pick one, then run |
+1. Complete **Setup** and run **`npm run dev`** inside `orchestrator-studio`.
+2. Open **http://localhost:5173**.
+3. Check the **masthead**: it should show **Model key present** if `OPENAI_API_KEY` is loaded. If it says **Awaiting credentials**, fix `.env` and restart `npm run dev`.
 
-1. Open the dev URL (or your deployed site).
-2. Use the **theme control** in the top bar for **dark** / **light** (`localStorage` key `orchestrator-theme`; `index.html` sets initial theme to reduce flash).
-3. On **Console** or **Tools**, edit the brief and click **Execute run**. Output shows **duration** and **request id** (same as `x-request-id` on the API).
+### Navigation (three tabs)
 
-### HTTP API
+| Route | Tab | Use when |
+| ----- | --- | -------- |
+| `/` | **Home** | Read overview, capability map, and jump to Console or Tools |
+| `/console` | **Console** | One **natural-language goal** that should **span multiple skills** (research + content + incident, etc.). Always uses the **`task-orchestrator`** agent. |
+| `/tools` | **Tools** | **One specialist** at a time (PR review, RAG, SQL, support, …). Pick a tile, edit the **Brief**, run. |
 
-| Method | Path               | Description |
-| ------ | ------------------ | ----------- |
-| `GET`  | `/api/health`      | Liveness; includes `openaiConfigured` |
-| `GET`  | `/api/ready`       | Returns **503** if `OPENAI_API_KEY` missing |
-| `GET`  | `/api/meta`        | Version, uptime, environment, key flag |
-| `GET`  | `/api/agents`      | List agents (`id`, `title`, `description`) |
-| `GET`  | `/api/agents/:id`  | Single agent metadata |
-| `POST` | `/api/run`         | Run an agent (JSON body below) |
+### Running a job (Console or Tools)
 
-**`POST /api/run` body:**
+1. Go to **Console** or **Tools**.
+2. The **Brief** field loads a **sample prompt** when you change agent (Tools) or open Console.
+3. Edit the text: include **goal**, **constraints**, and any **IDs** (order id, repo/PR, transaction id, etc.) the tools expect.
+4. Click **Execute run**.
+5. Read the **Transcript**: model output, **elapsed ms**, and **request id** (matches API `x-request-id` for logs).
+
+### Theme
+
+Use **Day / Night** in the masthead. Preference is stored as `orchestrator-theme` in `localStorage`; `index.html` sets the initial theme to reduce flash.
+
+### HTTP API (automation)
+
+| Method | Path | Purpose |
+| ------ | ---- | ------- |
+| `GET` | `/api/health` | Liveness |
+| `GET` | `/api/ready` | **503** if key missing |
+| `GET` | `/api/meta` | Version, uptime, env |
+| `GET` | `/api/agents` | List agents |
+| `GET` | `/api/agents/:id` | One agent |
+| `POST` | `/api/run` | Run agent |
+
+**Body:**
 
 ```json
 {
   "agentId": "task-orchestrator",
-  "message": "Your natural-language task"
+  "message": "Your task"
 }
 ```
 
-**Success (200):**
+**Success:** `{ "output", "requestId", "durationMs" }`.
 
-```json
-{
-  "output": "…model text…",
-  "requestId": "…",
-  "durationMs": 12345
-}
-```
-
-**Common errors:**
-
-- **400** — invalid body or unknown `agentId`
-- **429** — rate limit (POST volume)
-- **503** — OpenAI key not configured, or readiness check failed
-
-**Example with curl:**
+**curl example:**
 
 ```bash
 curl -sS http://127.0.0.1:8787/api/agents | jq
-curl -sS http://127.0.0.1:8787/api/meta | jq
-
 curl -sS -X POST http://127.0.0.1:8787/api/run \
   -H 'Content-Type: application/json' \
   -d '{"agentId":"research","message":"What is TypeScript? One short paragraph."}'
 ```
 
+---
+
 ## Troubleshooting
 
-- **`Could not reach API` in the UI** — Start `npm run dev:api` or full `npm run dev`; confirm port **8787**.
-- **503 on `/api/run`** — Set `OPENAI_API_KEY` in `.env` and restart the API.
-- **Import / TypeScript errors after git pull** — Run `npm run build -w agents-platform` again.
-- **Rate limit during testing** — Increase `RATE_LIMIT_MAX` or narrow `RATE_LIMIT_WINDOW_MS` in `.env`.
+| Issue | What to try |
+| ----- | ----------- |
+| UI can’t load agents | Ensure **`npm run dev`** (or `dev:api`) is running; API on **8787**. |
+| **503** on run | Set **`OPENAI_API_KEY`** and restart the API. |
+| Import errors after pull | **`npm run build -w agents-platform`**. |
+| Too many **429**s | Raise **`RATE_LIMIT_MAX`** or widen **`RATE_LIMIT_WINDOW_MS`** in `.env`. |
+
+---
+
+## Improvements & ideas (for discussion)
+
+These are **directions**, not a commitment—pick what matches your product goals.
+
+1. **Authn / multi-tenant** — API keys or OAuth on `/api/run`; per-tenant agent allowlists and usage quotas.
+2. **Streaming** — Stream model tokens to the Transcript (SSE/WebSocket) instead of waiting for the full `finalOutput`.
+3. **Run history** — Persist runs (Postgres/SQLite) keyed by `requestId` for replay, compare, and audit.
+4. **Tool traces** — Surface which tools the agent called and with what arguments (where the SDK exposes this).
+5. **E2E tests** — Playwright against the UI; supertest against the API with a mocked model layer.
+6. **Real integrations** — Swap demo tools for live GitHub, Slack, DB read-only roles, vector DB—behind feature flags.
+7. **Deployment** — Dockerfile + compose (UI static + API), or single Fly.io/Render service with `vite preview` + API; document `BASE_URL` for React Router if not served from `/`.
+8. **Observability** — Structured logging (pino), OpenTelemetry traces from API into your APM.
+9. **Safety** — Stricter allowlists for `agentId` per environment; content policies on user prompts for public demos.
+10. **UX** — Cancel in-flight run, duplicate last prompt, export transcript as Markdown, keyboard shortcut to run.
+
+If you tell us your priority (e.g. “streaming first” or “deploy to X”), the next steps can be ordered as a concrete roadmap.
+
+---
 
 ## Related
 
-- Agent definitions and tools: [`../agents-platform`](../agents-platform)
-- OpenAI Agents SDK: [OpenAI Agents documentation](https://openai.github.io/openai-agents-js/)
+- Agent definitions: [`../agents-platform`](../agents-platform)
+- OpenAI Agents SDK: [openai.github.io/openai-agents-js](https://openai.github.io/openai-agents-js/)
