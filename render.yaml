@@ -1,0 +1,20 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+# After connect, set OPENAI_API_KEY (and review COOKIE_SECRET) in the dashboard if needed.
+
+services:
+  - type: web
+    name: orchestrator-studio
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build -w orchestrator-studio
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TRUST_PROXY
+        value: "1"
+      - key: COOKIE_SECRET
+        generateValue: true
+      - key: OPENAI_API_KEY
+        sync: false

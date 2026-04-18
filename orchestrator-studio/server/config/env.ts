@@ -1,5 +1,6 @@
 import { config as loadEnv } from 'dotenv';
 import { resolve } from 'node:path';
+import { getStudioDistDir } from '../paths.js';
 
 /** Load `.env` from repo root, then `orchestrator-studio/.env`. */
 export function loadEnvironment(): void {
@@ -27,6 +28,8 @@ export type AppConfig = {
   allowAnonymousServerRun: boolean;
   /** Stricter POST cap for `/api/run/demo` per IP per window. */
   demoRateLimitMax: number;
+  /** When set, Express serves the Vite `dist/` folder and SPA fallback (production or `SERVE_STUDIO_UI=1`). */
+  studioDistDir: string | null;
 };
 
 export function getConfig(): AppConfig {
@@ -51,6 +54,7 @@ export function getConfig(): AppConfig {
     cookieSecret: process.env.COOKIE_SECRET || 'dev-cookie-secret-change-me',
     allowAnonymousServerRun: process.env.ALLOW_ANONYMOUS_SERVER_RUN === 'true',
     demoRateLimitMax: Math.max(1, Number(process.env.DEMO_RATE_LIMIT_MAX) || 8),
+    studioDistDir: getStudioDistDir(),
   };
 }
 

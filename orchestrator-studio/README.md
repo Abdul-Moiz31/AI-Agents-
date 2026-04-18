@@ -97,7 +97,7 @@ Create **`.env`** at the **repository root** (recommended) or in `orchestrator-s
 | `ALLOW_ANONYMOUS_SERVER_RUN` | No | If `true`, `POST /api/run` may use the server key when no Bearer is sent. **Do not enable on public production**; prefer BYOK only. |
 | `DEMO_RATE_LIMIT_MAX` | No | Max `POST /api/run/demo` requests per IP per `RATE_LIMIT_WINDOW_MS` (default `8`). |
 
-Optional API tuning: `PORT` (default `8787`), `CORS_ORIGIN`, `BODY_LIMIT`, `MAX_CONCURRENT_RUNS`, `RUN_SOFT_TIMEOUT_MS`, `RATE_LIMIT_WINDOW_MS`, `RATE_LIMIT_MAX`, `TRUST_PROXY`. See `server/config/env.ts`.
+Optional API tuning: `PORT` (default `8787`), `CORS_ORIGIN`, `BODY_LIMIT`, `MAX_CONCURRENT_RUNS`, `RUN_SOFT_TIMEOUT_MS`, `RATE_LIMIT_WINDOW_MS`, `RATE_LIMIT_MAX`, `TRUST_PROXY`, `SERVE_STUDIO_UI` (set `1` to serve `dist/` even when `NODE_ENV` is not `production`). See `server/config/env.ts`.
 
 **CORS:** If the UI is on another origin, set `CORS_ORIGIN` to that origin (comma-separated list allowed). The API uses `credentials: true` so the browser can send the signed demo cookie — do not use `CORS_ORIGIN=*` with credentials.
 
@@ -121,14 +121,19 @@ npm run dev -w orchestrator-studio
 
 **Debug one process only:** `npm run dev:api` or `npm run dev:ui`.
 
-### 5. Production UI build
+### 5. Production (API + UI on one port)
+
+From **repository root** (after `npm install` so workspaces link `agents-platform`):
 
 ```bash
-cd orchestrator-studio
-npm run build
+npm run build -w orchestrator-studio
+NODE_ENV=production npm run start -w orchestrator-studio
 ```
 
-Static output: `dist/`. Serve it and run the API separately; put **`/api`** behind a reverse proxy to the Node server, or configure CORS.
+- Serves **`/api/*`** from Express and the Vite app from **`dist/`** (same origin).
+- Render: use the repo’s [`render.yaml`](../render.yaml) or set **Build** to `npm install && npm run build -w orchestrator-studio` and **Start** to `npm start`. Set **`TRUST_PROXY=1`**, a strong **`COOKIE_SECRET`**, and optionally **`OPENAI_API_KEY`**.
+
+The root `npm start` runs the studio (not the demo `index.ts` script — use `npm run start:demo` for that).
 
 ---
 

@@ -1,6 +1,7 @@
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
+import { join } from 'node:path';
 import type { AppConfig } from './config/env.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFound } from './middleware/notFound.js';
@@ -28,6 +29,24 @@ export function createApp(cfg: AppConfig): express.Express {
   app.use(express.json({ limit: cfg.bodyLimit }));
   app.use('/api', createRateLimiter(cfg));
   app.use('/api', apiRouter(cfg));
+
+  const studioDist = cfg.studioDistDir;
+  if (studioDist) {
+    app.use(
+      express.static(studioDist, {
+        index: 'index.html',
+        fallthrough: true,
+      }),
+    );
+    app.use((req, res, next) => {
+      if (req.path.startsWith('/api')) return next();
+      if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+      res.sendFile(join(studioDist, 'index.html'), (err) => {
+        if (err) next(err);
+      });
+    });
+  }
+
   app.use(notFound);
   app.use(errorHandler);
 
