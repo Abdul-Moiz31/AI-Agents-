@@ -1,0 +1,19 @@
+{
+  "articles": [
+    {
+      "id": "kb-1",
+      "title": "Reset password",
+      "body": "Users can reset their password from the login page using the Forgot password link. A reset email arrives within 5 minutes."
+    },
+    {
+      "id": "kb-2",
+      "title": "Refund policy",
+      "body": "Full refunds are available within 14 days of purchase if the product is unused. Contact support with order ID."
+    },
+    {
+      "id": "kb-3",
+      "title": "Shipping times",
+      "body": "Standard shipping is 5–7 business days. Express is 2–3 days. International may take 10–15 days."
+    }
+  ]
+}

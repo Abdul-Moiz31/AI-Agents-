@@ -1,0 +1,12 @@
+{
+  "icp": {
+    "industries": ["B2B SaaS", "Fintech"],
+    "companySize": "50–500 employees",
+    "regions": ["North America", "EU"],
+    "painPoints": ["manual onboarding", "compliance overhead", "slow analytics"]
+  },
+  "sampleLeads": [
+    { "company": "Acme Analytics", "role": "VP Engineering", "signal": "hiring SREs" },
+    { "company": "Northwind Payments", "role": "CTO", "signal": "SOC2 in progress" }
+  ]
+}

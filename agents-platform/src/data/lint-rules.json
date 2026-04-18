@@ -1,0 +1,7 @@
+{
+  "rules": [
+    { "id": "no-console", "severity": "warn", "description": "Disallow console.log in production paths" },
+    { "id": "no-secrets", "severity": "error", "description": "Block hardcoded API keys or tokens" },
+    { "id": "sql-injection", "severity": "error", "description": "Require parameterized queries for DB access" }
+  ]
+}

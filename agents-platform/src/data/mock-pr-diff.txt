@@ -1,0 +1,11 @@
+diff --git a/src/payment.ts b/src/payment.ts
+index 1111111..2222222 100644
+--- a/src/payment.ts
++++ b/src/payment.ts
+@@ -10,6 +10,8 @@ export async function charge(card: string, amount: number) {
+-  const token = card;
++  // TODO: remove before prod
++  console.log('charging', card, amount);
++  const token = card.replace(/\s/g, '');
+   return gateway.charge(token, amount);
+ }

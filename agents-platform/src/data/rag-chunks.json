@@ -1,0 +1,19 @@
+{
+  "chunks": [
+    {
+      "id": "doc1§0",
+      "source": "internal-handbook.md",
+      "text": "All production deploys require a change ticket and peer review. Rollbacks follow the runbook in /ops/rollback."
+    },
+    {
+      "id": "doc1§1",
+      "source": "internal-handbook.md",
+      "text": "Customer PII must not be logged. Use structured logging with redaction enabled."
+    },
+    {
+      "id": "doc2§0",
+      "source": "pricing-2025.pdf",
+      "text": "Enterprise tier includes SSO, audit logs, and 99.9% SLA. Contact sales for custom quotes."
+    }
+  ]
+}

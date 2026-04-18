@@ -1,0 +1,4 @@
+Alex: Let's align on Q2 goals. Priya, can you own the migration checklist?
+Priya: Yes. I'll have a draft by Friday and need one engineer from platform.
+Jordan: I'll pair Thursday. We should also flag risk on the legacy auth dependency.
+Alex: Good. Action: Jordan + Priya schedule deep dive on auth. Marketing wants launch blog by May 1.

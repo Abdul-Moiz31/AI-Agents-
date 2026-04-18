@@ -1,0 +1,7 @@
+{
+  "orders": [
+    { "orderId": "ord_1001", "customerId": "cust_a", "status": "shipped", "totalCents": 4999, "currency": "USD" },
+    { "orderId": "ord_1002", "customerId": "cust_b", "status": "processing", "totalCents": 12900, "currency": "USD" },
+    { "orderId": "ord_1003", "customerId": "cust_a", "status": "refunded", "totalCents": 2500, "currency": "USD" }
+  ]
+}

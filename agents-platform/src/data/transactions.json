@@ -1,0 +1,7 @@
+{
+  "events": [
+    { "id": "txn_1", "userId": "u1", "amountCents": 1200, "country": "US", "device": "mobile", "velocity24h": 2 },
+    { "id": "txn_2", "userId": "u2", "amountCents": 999999, "country": "XX", "device": "vpn", "velocity24h": 40 },
+    { "id": "txn_3", "userId": "u3", "amountCents": 4500, "country": "US", "device": "desktop", "velocity24h": 1 }
+  ]
+}
