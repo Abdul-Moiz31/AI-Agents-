@@ -1,5 +1,11 @@
-# Render Blueprint — https://render.com/docs/blueprint-spec
-# After connect, set OPENAI_API_KEY (and review COOKIE_SECRET) in the dashboard if needed.
+# Render Blueprint — https://render.com/docs/infrastructure-as-code
+#
+# Existing service created manually? Set in Dashboard → Settings:
+#   Build:  npm install && npm run build -w orchestrator-studio
+#   Start:  npm start
+# Never use: node demo-haiku.ts / ad-hoc TS entry — use npm start (Orchestrator Studio).
+#
+# After first connect, set OPENAI_API_KEY in the dashboard if you need server-side demo runs.
 
 services:
   - type: web

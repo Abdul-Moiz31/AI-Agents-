@@ -133,7 +133,7 @@ NODE_ENV=production npm run start -w orchestrator-studio
 - Serves **`/api/*`** from Express and the Vite app from **`dist/`** (same origin).
 - Render: use the repo’s [`render.yaml`](../render.yaml) or set **Build** to `npm install && npm run build -w orchestrator-studio` and **Start** to `npm start`. Set **`TRUST_PROXY=1`**, a strong **`COOKIE_SECRET`**, and optionally **`OPENAI_API_KEY`**.
 
-The root `npm start` runs the studio (not the demo `index.ts` script — use `npm run start:demo` for that).
+The root `npm start` runs the studio (not `demo-haiku.ts` — use `npm run start:demo` for that).
 
 ---
 
