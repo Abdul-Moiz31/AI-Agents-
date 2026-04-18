@@ -9,5 +9,5 @@
     "noEmit": true,
     "esModuleInterop": true
   },
-  "include": ["index.ts", "agent_tools.ts", "agent_manager.ts"]
+  "include": ["demo-haiku.ts", "agent_tools.ts", "agent_manager.ts"]
 }

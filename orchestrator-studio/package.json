@@ -4,12 +4,12 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently -k \"npm:dev:api\" \"npm:dev:ui\"",
-    "dev:api": "tsx watch server/index.ts",
-    "dev:ui": "vite",
+    "dev": "node api.js && concurrently -k \"npm:dev:api\" \"npm:dev:ui\"",
+    "dev:api": "node api.js && tsx watch server/index.ts",
+    "dev:ui": "node api.js && vite",
     "typecheck": "tsc --noEmit",
     "build": "npm --prefix ../agents-platform run build && vite build",
-    "start": "tsx server/index.ts",
+    "start": "node api.js && tsx server/index.ts",
     "preview": "vite preview"
   },
   "dependencies": {
