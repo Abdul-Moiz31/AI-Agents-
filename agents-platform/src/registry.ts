@@ -139,8 +139,12 @@ export function getAgentEntry(id: AgentId): AgentRegistryEntry | undefined {
   return byId.get(id);
 }
 
-export async function runAgentById(id: AgentId, message: string): Promise<string> {
+export async function runAgentById(
+  id: AgentId,
+  message: string,
+  options?: { openaiApiKey?: string },
+): Promise<string> {
   const entry = byId.get(id);
   if (!entry) throw new Error(`Unknown agent: ${id}`);
-  return runWithAgent(entry.agent, message);
+  return runWithAgent(entry.agent, message, options);
 }

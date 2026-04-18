@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ApiKeyModal } from '../components/ApiKeyModal.js';
 import { ToolsGrid } from '../components/ToolsGrid.js';
 import { Workspace } from '../components/Workspace.js';
 import { useAppState } from '../context/AppStateContext.js';
@@ -19,7 +20,19 @@ export function ToolsPage() {
     });
   }, [specialists]);
 
-  const { message, setMessage, output, loading, error, lastRun, onRun } = useAgentRunner(selectedId);
+  const {
+    message,
+    setMessage,
+    output,
+    loading,
+    error,
+    lastRun,
+    onRun,
+    sessionReady,
+    apiKeyModalOpen,
+    closeApiKeyModal,
+    submitApiKey,
+  } = useAgentRunner(selectedId);
 
   return (
     <div className="page page--tools">
@@ -47,10 +60,12 @@ export function ToolsPage() {
             onMessageChange={setMessage}
             onRun={onRun}
             loading={loading}
+            sessionReady={sessionReady}
             error={error}
             output={output}
             lastRun={lastRun}
           />
+          <ApiKeyModal open={apiKeyModalOpen} onClose={closeApiKeyModal} onSubmitKey={submitApiKey} />
         </>
       )}
     </div>

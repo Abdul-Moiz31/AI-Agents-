@@ -18,6 +18,15 @@ export type AppConfig = {
   runSoftTimeoutMs: number;
   rateLimitWindowMs: number;
   rateLimitMaxRequests: number;
+  /** Secret for signed cookies (`orchestrator_demo`). Required in production. */
+  cookieSecret: string;
+  /**
+   * When true, `POST /api/run` may use the server `OPENAI_API_KEY` if the client sends no Bearer token.
+   * **Do not enable in public production** — use BYOK (`Authorization: Bearer sk-...`) only.
+   */
+  allowAnonymousServerRun: boolean;
+  /** Stricter POST cap for `/api/run/demo` per IP per window. */
+  demoRateLimitMax: number;
 };
 
 export function getConfig(): AppConfig {
@@ -26,6 +35,8 @@ export function getConfig(): AppConfig {
   let corsOrigin: AppConfig['corsOrigin'] = true;
   if (corsRaw && corsRaw !== '*') {
     corsOrigin = corsRaw.split(',').map((s) => s.trim());
+  } else if (nodeEnv === 'development' && !corsRaw) {
+    corsOrigin = ['http://127.0.0.1:5173', 'http://localhost:5173'];
   }
 
   return {
@@ -37,6 +48,9 @@ export function getConfig(): AppConfig {
     runSoftTimeoutMs: Math.max(30_000, Number(process.env.RUN_SOFT_TIMEOUT_MS) || 120_000),
     rateLimitWindowMs: Math.max(1000, Number(process.env.RATE_LIMIT_WINDOW_MS) || 60_000),
     rateLimitMaxRequests: Math.max(1, Number(process.env.RATE_LIMIT_MAX) || 30),
+    cookieSecret: process.env.COOKIE_SECRET || 'dev-cookie-secret-change-me',
+    allowAnonymousServerRun: process.env.ALLOW_ANONYMOUS_SERVER_RUN === 'true',
+    demoRateLimitMax: Math.max(1, Number(process.env.DEMO_RATE_LIMIT_MAX) || 8),
   };
 }
 

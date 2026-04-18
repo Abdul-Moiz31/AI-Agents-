@@ -13,11 +13,10 @@ export function healthRouter(_cfg: AppConfig): Router {
   });
 
   r.get('/ready', (_req, res) => {
-    if (!isOpenAiConfigured()) {
-      res.status(503).json({ ok: false, reason: 'OPENAI_API_KEY not set' });
-      return;
-    }
-    res.json({ ok: true });
+    res.json({
+      ok: true,
+      serverOpenAiConfigured: isOpenAiConfigured(),
+    });
   });
 
   return r;

@@ -13,10 +13,19 @@ export type RunAgentRequestBody = {
   message: string;
 };
 
+export type RunMode = 'demo' | 'byok' | 'server';
+
 export type RunAgentResponseBody = {
   output: string;
   requestId: string;
   durationMs: number;
+  mode?: RunMode;
+};
+
+export type SessionResponseBody = {
+  demoAvailable: boolean;
+  demoConsumed: boolean;
+  allowAnonymousServerRun: boolean;
 };
 
 export type ErrorResponseBody = {

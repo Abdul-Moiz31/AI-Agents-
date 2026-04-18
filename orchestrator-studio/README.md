@@ -67,7 +67,7 @@ orchestrator-studio/
 
 - **Node.js** 18+ (20+ recommended)
 - **npm** 9+
-- **`OPENAI_API_KEY`** for `@openai/agents`
+- **`OPENAI_API_KEY`** on the server if you want a **shared demo run** (`POST /api/run/demo`) and/or anonymous `POST /api/run` (opt-in). Otherwise the UI and API still work with **BYOK**: clients send `Authorization: Bearer sk-...`.
 
 ---
 
@@ -92,9 +92,14 @@ Create **`.env`** at the **repository root** (recommended) or in `orchestrator-s
 
 | Variable | Required | Description |
 | -------- | -------- | ----------- |
-| `OPENAI_API_KEY` | Yes | OpenAI API key |
+| `OPENAI_API_KEY` | No* | Server-side key for **one free demo** per browser (`/api/run/demo`) and optional anonymous `/api/run` (see `ALLOW_ANONYMOUS_SERVER_RUN`). Without it, users must use **BYOK** (`Authorization: Bearer sk-...`). |
+| `COOKIE_SECRET` | Production | Secret for signing the `orchestrator_demo` cookie. Defaults to a dev placeholder if unset. |
+| `ALLOW_ANONYMOUS_SERVER_RUN` | No | If `true`, `POST /api/run` may use the server key when no Bearer is sent. **Do not enable on public production**; prefer BYOK only. |
+| `DEMO_RATE_LIMIT_MAX` | No | Max `POST /api/run/demo` requests per IP per `RATE_LIMIT_WINDOW_MS` (default `8`). |
 
-Optional API tuning: `PORT` (default `8787`), `CORS_ORIGIN`, `BODY_LIMIT`, `MAX_CONCURRENT_RUNS`, `RUN_SOFT_TIMEOUT_MS`, `RATE_LIMIT_WINDOW_MS`, `RATE_LIMIT_MAX`, `TRUST_PROXY`. See table in an earlier version or `server/config/env.ts`.
+Optional API tuning: `PORT` (default `8787`), `CORS_ORIGIN`, `BODY_LIMIT`, `MAX_CONCURRENT_RUNS`, `RUN_SOFT_TIMEOUT_MS`, `RATE_LIMIT_WINDOW_MS`, `RATE_LIMIT_MAX`, `TRUST_PROXY`. See `server/config/env.ts`.
+
+**CORS:** If the UI is on another origin, set `CORS_ORIGIN` to that origin (comma-separated list allowed). The API uses `credentials: true` so the browser can send the signed demo cookie — do not use `CORS_ORIGIN=*` with credentials.
 
 Load order: repo root `.env`, then `orchestrator-studio/.env` (later wins).
 
@@ -133,7 +138,7 @@ Static output: `dist/`. Serve it and run the API separately; put **`/api`** behi
 
 1. Complete **Setup** and run **`npm run dev`** inside `orchestrator-studio`.
 2. Open **http://localhost:5173**.
-3. Check the **masthead**: it should show **Model key present** if `OPENAI_API_KEY` is loaded. If it says **Awaiting credentials**, fix `.env` and restart `npm run dev`.
+3. Check the **masthead**: **Server key · demo run** means `OPENAI_API_KEY` is loaded (demo + optional anonymous run). **BYOK — your key on run** means clients must supply a key (or you add server key later).
 
 ### Navigation (three tabs)
 
@@ -148,8 +153,8 @@ Static output: `dist/`. Serve it and run the API separately; put **`/api`** behi
 1. Go to **Console** or **Tools**.
 2. The **Brief** field loads a **sample prompt** when you change agent (Tools) or open Console.
 3. Edit the text: include **goal**, **constraints**, and any **IDs** (order id, repo/PR, transaction id, etc.) the tools expect.
-4. Click **Execute run**.
-5. Read the **Transcript**: model output, **elapsed ms**, and **request id** (matches API `x-request-id` for logs).
+4. Click **Execute run**. The client picks a path in order: **saved key** (session storage) → **anonymous server run** (only if `ALLOW_ANONYMOUS_SERVER_RUN=true` and server key exists) → **one free demo** (`POST /api/run/demo`, cookie) → **API key modal** (BYOK).
+5. Read the **Transcript**: model output, **elapsed ms**, **request id**, and **mode** (`demo`, `byok`, or `server`).
 
 ### Theme
 
@@ -160,11 +165,13 @@ Use **Day / Night** in the masthead. Preference is stored as `orchestrator-theme
 | Method | Path | Purpose |
 | ------ | ---- | ------- |
 | `GET` | `/api/health` | Liveness |
-| `GET` | `/api/ready` | **503** if key missing |
+| `GET` | `/api/ready` | Readiness info (`serverOpenAiConfigured`); does **not** 503 when key missing |
 | `GET` | `/api/meta` | Version, uptime, env |
+| `GET` | `/api/session` | Demo availability, whether demo cookie consumed, anonymous-run flag |
 | `GET` | `/api/agents` | List agents |
 | `GET` | `/api/agents/:id` | One agent |
-| `POST` | `/api/run` | Run agent |
+| `POST` | `/api/run/demo` | One free run on server key; sets signed httpOnly cookie |
+| `POST` | `/api/run` | Run agent; requires `Authorization: Bearer sk-...` unless `ALLOW_ANONYMOUS_SERVER_RUN` |
 
 **Body:**
 
@@ -175,14 +182,18 @@ Use **Day / Night** in the masthead. Preference is stored as `orchestrator-theme
 }
 ```
 
-**Success:** `{ "output", "requestId", "durationMs" }`.
+**Success:** `{ "output", "requestId", "durationMs", "mode"? }` (`mode`: `demo` | `byok` | `server`).
 
-**curl example:**
+**curl examples:**
 
 ```bash
 curl -sS http://127.0.0.1:8787/api/agents | jq
+curl -sS -c cookies.txt -X POST http://127.0.0.1:8787/api/run/demo \
+  -H 'Content-Type: application/json' \
+  -d '{"agentId":"research","message":"What is TypeScript? One short paragraph."}'
 curl -sS -X POST http://127.0.0.1:8787/api/run \
   -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $OPENAI_API_KEY" \
   -d '{"agentId":"research","message":"What is TypeScript? One short paragraph."}'
 ```
 
@@ -193,7 +204,8 @@ curl -sS -X POST http://127.0.0.1:8787/api/run \
 | Issue | What to try |
 | ----- | ----------- |
 | UI can’t load agents | Ensure **`npm run dev`** (or `dev:api`) is running; API on **8787**. |
-| **503** on run | Set **`OPENAI_API_KEY`** and restart the API. |
+| **401** `API_KEY_REQUIRED` on `/api/run` | Send **`Authorization: Bearer sk-...`**, use **`/api/run/demo`** once, or enable **`ALLOW_ANONYMOUS_SERVER_RUN`** (dev only). |
+| **503** on demo | Set **`OPENAI_API_KEY`** for the server if you want the free demo. |
 | Import errors after pull | **`npm run build -w agents-platform`**. |
 | Too many **429**s | Raise **`RATE_LIMIT_MAX`** or widen **`RATE_LIMIT_WINDOW_MS`** in `.env`. |
 

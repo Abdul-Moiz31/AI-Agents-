@@ -7,7 +7,7 @@ type Props = {
 };
 
 export function TopBar({ meta }: Props) {
-  const ready = meta?.openaiConfigured ?? false;
+  const serverKey = meta?.openaiConfigured ?? false;
 
   return (
     <header className="masthead">
@@ -23,9 +23,9 @@ export function TopBar({ meta }: Props) {
       <div className="masthead__tools">
         {meta && (
           <>
-            <span className={`masthead__signal ${ready ? 'is-live' : 'is-idle'}`}>
+            <span className={`masthead__signal ${serverKey ? 'is-live' : 'is-idle'}`}>
               <span className="masthead__signal-dot" aria-hidden />
-              {ready ? 'Model key present' : 'Awaiting credentials'}
+              {serverKey ? 'Server key · demo run' : 'BYOK — your key on run'}
             </span>
             <span className="masthead__sep" aria-hidden>
               /

@@ -1,3 +1,4 @@
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import type { AppConfig } from './config/env.js';
@@ -17,7 +18,13 @@ export function createApp(cfg: AppConfig): express.Express {
   app.disable('x-powered-by');
   app.use(requestContext);
   app.use(requestLogger);
-  app.use(cors({ origin: cfg.corsOrigin }));
+  app.use(
+    cors({
+      origin: cfg.corsOrigin,
+      credentials: true,
+    }),
+  );
+  app.use(cookieParser(cfg.cookieSecret));
   app.use(express.json({ limit: cfg.bodyLimit }));
   app.use('/api', createRateLimiter(cfg));
   app.use('/api', apiRouter(cfg));

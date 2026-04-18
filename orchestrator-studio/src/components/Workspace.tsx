@@ -6,9 +6,10 @@ type Props = {
   onMessageChange: (v: string) => void;
   onRun: () => void;
   loading: boolean;
+  sessionReady?: boolean;
   error: string | null;
   output: string;
-  lastRun: { durationMs: number; requestId: string } | null;
+  lastRun: { durationMs: number; requestId: string; mode?: string } | null;
 };
 
 export function Workspace({
@@ -17,18 +18,20 @@ export function Workspace({
   onMessageChange,
   onRun,
   loading,
+  sessionReady = true,
   error,
   output,
   lastRun,
 }: Props) {
-  const blocked = meta && !meta.openaiConfigured;
+  const serverKeyMissing = meta && !meta.openaiConfigured;
 
   return (
     <div className="studio">
-      {blocked && (
+      {serverKeyMissing && (
         <div className="studio__alert" role="status">
-          Configure <span className="type-mono">OPENAI_API_KEY</span> in the repository{' '}
-          <span className="type-mono">.env</span>, then restart the API process.
+          No shared <span className="type-mono">OPENAI_API_KEY</span> on this host — use one free demo (if offered) or
+          add your key when you run. For local dev with a shared key, set it in <span className="type-mono">.env</span>{' '}
+          and restart the API.
         </div>
       )}
 
@@ -53,7 +56,7 @@ export function Workspace({
             <button
               type="button"
               className="memo__submit"
-              disabled={loading || !!blocked}
+              disabled={loading || !sessionReady}
               onClick={onRun}
             >
               {loading ? (
@@ -89,6 +92,12 @@ export function Workspace({
                   {lastRun.requestId}
                 </dd>
               </div>
+              {lastRun.mode && (
+                <div>
+                  <dt>Mode</dt>
+                  <dd className="type-mono">{lastRun.mode}</dd>
+                </div>
+              )}
             </dl>
           ) : (
             <p className="transcript__placeholder-meta">No run yet</p>

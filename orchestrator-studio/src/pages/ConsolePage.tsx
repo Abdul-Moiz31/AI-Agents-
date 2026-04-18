@@ -1,3 +1,4 @@
+import { ApiKeyModal } from '../components/ApiKeyModal.js';
 import { Workspace } from '../components/Workspace.js';
 import { ORCHESTRATOR_AGENT_ID } from '../constants/orchestrator.js';
 import { useAppState } from '../context/AppStateContext.js';
@@ -5,9 +6,19 @@ import { useAgentRunner } from '../hooks/useAgentRunner.js';
 
 export function ConsolePage() {
   const { meta, bootstrapError } = useAppState();
-  const { message, setMessage, output, loading, error, lastRun, onRun } = useAgentRunner(
-    ORCHESTRATOR_AGENT_ID,
-  );
+  const {
+    message,
+    setMessage,
+    output,
+    loading,
+    error,
+    lastRun,
+    onRun,
+    sessionReady,
+    apiKeyModalOpen,
+    closeApiKeyModal,
+    submitApiKey,
+  } = useAgentRunner(ORCHESTRATOR_AGENT_ID);
 
   return (
     <div className="page page--console">
@@ -30,10 +41,12 @@ export function ConsolePage() {
         onMessageChange={setMessage}
         onRun={onRun}
         loading={loading}
+        sessionReady={sessionReady}
         error={error}
         output={output}
         lastRun={lastRun}
       />
+      <ApiKeyModal open={apiKeyModalOpen} onClose={closeApiKeyModal} onSubmitKey={submitApiKey} />
     </div>
   );
 }

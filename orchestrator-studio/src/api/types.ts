@@ -8,10 +8,19 @@ export type MetaResponse = {
   environment: string;
 };
 
+export type RunMode = 'demo' | 'byok' | 'server';
+
 export type RunAgentResponse = {
   output: string;
   requestId: string;
   durationMs: number;
+  mode?: RunMode;
+};
+
+export type SessionResponse = {
+  demoAvailable: boolean;
+  demoConsumed: boolean;
+  allowAnonymousServerRun: boolean;
 };
 
 export type ApiErrorBody = {

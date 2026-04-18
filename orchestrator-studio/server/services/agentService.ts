@@ -24,6 +24,10 @@ export function isValidAgentId(id: string): id is AgentId {
   return Boolean(getAgentEntry(id as AgentId));
 }
 
-export async function executeAgentRun(agentId: AgentId, message: string): Promise<string> {
-  return runAgentById(agentId, message);
+export async function executeAgentRun(
+  agentId: AgentId,
+  message: string,
+  options?: { openaiApiKey?: string },
+): Promise<string> {
+  return runAgentById(agentId, message, options);
 }

@@ -1,14 +1,22 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { fetchAgents, fetchMeta } from '../api/client.js';
-import type { AgentSummary, MetaResponse } from '../api/types.js';
+import { fetchAgents, fetchMeta, fetchSession } from '../api/client.js';
+import type { AgentSummary, MetaResponse, SessionResponse } from '../api/types.js';
 import { ORCHESTRATOR_AGENT_ID } from '../constants/orchestrator.js';
+
+const SESSION_FALLBACK: SessionResponse = {
+  demoAvailable: false,
+  demoConsumed: true,
+  allowAnonymousServerRun: false,
+};
 
 type AppStateValue = {
   agents: AgentSummary[];
   specialists: AgentSummary[];
   meta: MetaResponse | null;
+  session: SessionResponse | null;
   bootstrapError: string | null;
   refetch: () => void;
+  refetchSession: () => void;
 };
 
 const AppStateContext = createContext<AppStateValue | null>(null);
@@ -16,9 +24,20 @@ const AppStateContext = createContext<AppStateValue | null>(null);
 export function AppStateProvider({ children }: { children: ReactNode }) {
   const [agents, setAgents] = useState<AgentSummary[]>([]);
   const [meta, setMeta] = useState<MetaResponse | null>(null);
+  const [session, setSession] = useState<SessionResponse | null>(null);
   const [bootstrapError, setBootstrapError] = useState<string | null>(null);
 
+  const loadSession = useCallback(() => {
+    return fetchSession()
+      .then(setSession)
+      .catch(() => setSession(SESSION_FALLBACK));
+  }, []);
+
   const load = useCallback(() => {
+    void fetchSession()
+      .then(setSession)
+      .catch(() => setSession(SESSION_FALLBACK));
+
     Promise.all([fetchAgents(), fetchMeta()])
       .then(([a, m]) => {
         setAgents(a);
@@ -42,8 +61,16 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ agents, specialists, meta, bootstrapError, refetch: load }),
-    [agents, specialists, meta, bootstrapError, load],
+    () => ({
+      agents,
+      specialists,
+      meta,
+      session,
+      bootstrapError,
+      refetch: load,
+      refetchSession: loadSession,
+    }),
+    [agents, specialists, meta, session, bootstrapError, load, loadSession],
   );
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;
