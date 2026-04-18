@@ -10,6 +10,9 @@ type Props = {
   error: string | null;
   output: string;
   lastRun: { durationMs: number; requestId: string; mode?: string } | null;
+  /** Browser session has a BYOK key — show a way to replace it if it was wrong. */
+  hasStoredApiKey?: boolean;
+  onChangeApiKey?: () => void;
 };
 
 export function Workspace({
@@ -22,6 +25,8 @@ export function Workspace({
   error,
   output,
   lastRun,
+  hasStoredApiKey = false,
+  onChangeApiKey,
 }: Props) {
   const serverKeyMissing = meta && !meta.openaiConfigured;
 
@@ -53,6 +58,13 @@ export function Workspace({
             rows={6}
           />
           <footer className="memo__foot">
+            {hasStoredApiKey && onChangeApiKey ? (
+              <button type="button" className="memo__link-btn" onClick={onChangeApiKey}>
+                Change API key
+              </button>
+            ) : (
+              <span />
+            )}
             <button
               type="button"
               className="memo__submit"
@@ -104,8 +116,16 @@ export function Workspace({
           )}
         </header>
         {error && (
-          <div className="transcript__error" role="alert">
-            {error}
+          <div className="transcript__error-block" role="alert">
+            <div className="transcript__error">{error}</div>
+            {hasStoredApiKey && onChangeApiKey && (
+              <p className="transcript__error-follow">
+                <button type="button" className="memo__link-btn" onClick={onChangeApiKey}>
+                  Edit API key
+                </button>
+                {' — replace the key and run again.'}
+              </p>
+            )}
           </div>
         )}
         <article className="transcript__page">

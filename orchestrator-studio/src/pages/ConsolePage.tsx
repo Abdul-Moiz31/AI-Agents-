@@ -16,8 +16,11 @@ export function ConsolePage() {
     onRun,
     sessionReady,
     apiKeyModalOpen,
+    apiKeyModalSeed,
     closeApiKeyModal,
     submitApiKey,
+    requestChangeApiKey,
+    hasStoredApiKey,
   } = useAgentRunner(ORCHESTRATOR_AGENT_ID);
 
   return (
@@ -45,8 +48,15 @@ export function ConsolePage() {
         error={error}
         output={output}
         lastRun={lastRun}
+        hasStoredApiKey={hasStoredApiKey}
+        onChangeApiKey={requestChangeApiKey}
       />
-      <ApiKeyModal open={apiKeyModalOpen} onClose={closeApiKeyModal} onSubmitKey={submitApiKey} />
+      <ApiKeyModal
+        open={apiKeyModalOpen}
+        onClose={closeApiKeyModal}
+        onSubmitKey={submitApiKey}
+        initialKey={apiKeyModalSeed}
+      />
     </div>
   );
 }

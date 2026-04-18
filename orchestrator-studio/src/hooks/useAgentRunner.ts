@@ -22,6 +22,8 @@ export function useAgentRunner(agentId: string | null) {
     mode?: string;
   } | null>(null);
   const [apiKeyModalOpen, setApiKeyModalOpen] = useState(false);
+  /** When set, modal opens with this value (e.g. existing key for edit). */
+  const [apiKeyModalSeed, setApiKeyModalSeed] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (!agentId) {
@@ -66,6 +68,7 @@ export function useAgentRunner(agentId: string | null) {
       return;
     }
 
+    setApiKeyModalSeed(undefined);
     setApiKeyModalOpen(true);
   }, [agentId, message, session, refetchSession, applyRunResult]);
 
@@ -82,6 +85,12 @@ export function useAgentRunner(agentId: string | null) {
 
   const closeApiKeyModal = useCallback(() => {
     setApiKeyModalOpen(false);
+    setApiKeyModalSeed(undefined);
+  }, []);
+
+  const requestChangeApiKey = useCallback(() => {
+    setApiKeyModalSeed(readStoredKey() ?? '');
+    setApiKeyModalOpen(true);
   }, []);
 
   const submitApiKey = useCallback(
@@ -89,6 +98,7 @@ export function useAgentRunner(agentId: string | null) {
       if (!agentId) return;
       sessionStorage.setItem(USER_OPENAI_KEY_STORAGE, key.trim());
       setApiKeyModalOpen(false);
+      setApiKeyModalSeed(undefined);
       setLoading(true);
       setError(null);
       setOutput('');
@@ -101,6 +111,8 @@ export function useAgentRunner(agentId: string | null) {
     [agentId, message, applyRunResult],
   );
 
+  const hasStoredApiKey = Boolean(readStoredKey());
+
   return {
     message,
     setMessage,
@@ -111,7 +123,10 @@ export function useAgentRunner(agentId: string | null) {
     onRun,
     sessionReady: session !== null,
     apiKeyModalOpen,
+    apiKeyModalSeed,
     closeApiKeyModal,
     submitApiKey,
+    requestChangeApiKey,
+    hasStoredApiKey,
   };
 }

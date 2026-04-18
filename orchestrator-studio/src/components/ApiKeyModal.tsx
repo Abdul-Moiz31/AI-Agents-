@@ -4,19 +4,25 @@ type Props = {
   open: boolean;
   onClose: () => void;
   onSubmitKey: (key: string) => void;
+  /** When opening to replace an existing tab key, pre-fill so the user can fix typos or paste a new key. */
+  initialKey?: string;
 };
 
-export function ApiKeyModal({ open, onClose, onSubmitKey }: Props) {
+export function ApiKeyModal({ open, onClose, onSubmitKey, initialKey }: Props) {
   const titleId = useId();
   const [value, setValue] = useState('');
   const [localError, setLocalError] = useState<string | null>(null);
+  const isUpdate = Boolean(initialKey);
 
   useEffect(() => {
     if (!open) {
       setValue('');
       setLocalError(null);
+      return;
     }
-  }, [open]);
+    setValue(initialKey ?? '');
+    setLocalError(null);
+  }, [open, initialKey]);
 
   if (!open) return null;
 
@@ -36,11 +42,17 @@ export function ApiKeyModal({ open, onClose, onSubmitKey }: Props) {
       <div className="modal" role="dialog" aria-modal="true" aria-labelledby={titleId}>
         <header className="modal__head">
           <h2 id={titleId} className="modal__title">
-            OpenAI API key
+            {isUpdate ? 'Update OpenAI API key' : 'OpenAI API key'}
           </h2>
           <p className="modal__lede">
             This app sends your key to the Orchestrator API as <span className="type-mono">Authorization: Bearer</span>{' '}
             only. It is kept in <strong>session storage</strong> for this browser tab until you close the tab.
+            {isUpdate && (
+              <>
+                {' '}
+                Replace the value below if the previous key was wrong or expired.
+              </>
+            )}
           </p>
         </header>
         <label className="modal__label" htmlFor="api-key-field">

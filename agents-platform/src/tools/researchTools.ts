@@ -31,7 +31,10 @@ export const webSearchTool = tool({
 export const fetchUrlTextTool = tool({
   name: 'fetch_url_text',
   description: 'Fetch a URL and return truncated text (best-effort; many sites block bots).',
-  parameters: z.object({ url: z.string().url(), maxChars: z.number().default(6000) }),
+  parameters: z.object({
+    url: z.string().describe('Full http(s) URL to fetch as plain text.'),
+    maxChars: z.number().default(6000),
+  }),
   execute: async ({ url, maxChars }) => {
     const res = await fetch(url, { headers: { 'User-Agent': 'AgentsPlatform/1.0 (research bot)' } });
     if (!res.ok) return { error: `HTTP ${res.status}` };

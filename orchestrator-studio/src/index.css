@@ -322,7 +322,35 @@ body {
 
 .memo__foot {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.memo__link-btn {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition: opacity 0.12s ease;
+}
+
+.memo__link-btn:hover {
+  opacity: 0.88;
+}
+
+.memo__link-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+  border-radius: 1px;
 }
 
 .memo__submit {
@@ -439,12 +467,30 @@ body {
   font-style: italic;
 }
 
+.transcript__error-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 .transcript__error {
   font-size: 0.85rem;
   padding: 0.65rem 0.85rem;
   border: 1px solid color-mix(in srgb, var(--danger) 45%, var(--rule));
   background: var(--danger-bg);
   color: var(--danger);
+}
+
+.transcript__error-follow {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  line-height: 1.5;
+}
+
+.transcript__error-follow .memo__link-btn {
+  font-size: inherit;
+  vertical-align: baseline;
 }
 
 .transcript__page {
