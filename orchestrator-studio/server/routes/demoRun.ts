@@ -13,6 +13,7 @@ import { DEMO_COOKIE } from './session.js';
 const bodySchema = z.object({
   agentId: z.string().min(1),
   message: z.string().min(1).max(200_000),
+  ragCollectionId: z.string().uuid().optional(),
 });
 
 const DEMO_COOKIE_MS = 400 * 24 * 60 * 60 * 1000;
@@ -53,7 +54,7 @@ export function demoRunRouter(cfg: AppConfig): Router {
         return;
       }
 
-      const { agentId, message } = parsed.data;
+      const { agentId, message, ragCollectionId } = parsed.data;
       if (!isValidAgentId(agentId)) {
         res.status(400).json({
           error: `Unknown agentId: ${agentId}`,
@@ -65,8 +66,9 @@ export function demoRunRouter(cfg: AppConfig): Router {
       const release = await semaphore.acquire();
       const t0 = Date.now();
       try {
+        const runOpts = ragCollectionId ? { ragCollectionId } : undefined;
         const output = await runWithTimeout(
-          () => executeAgentRun(agentId as AgentId, message),
+          () => executeAgentRun(agentId as AgentId, message, runOpts),
           cfg.runSoftTimeoutMs,
         );
         res.cookie(DEMO_COOKIE, '1', {

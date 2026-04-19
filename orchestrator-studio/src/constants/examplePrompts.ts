@@ -16,7 +16,8 @@ export const EXAMPLE_PROMPTS: Record<string, string> = {
   'fraud-detection': 'Score fraud risk for transaction txn_2 and explain triggers.',
   'contract-analysis': 'Review the sample contract: flag auto-renewal and liability cap.',
   'email-inbox': 'Triage inbox and draft a reply to the invoice question.',
-  'knowledge-rag': 'What does our handbook say about PII in logs?',
+  'knowledge-rag':
+    'In two short paragraphs: what is Orchestrator Studio, and what happens when I click "Retrieve & answer" on the RAG tab?',
   'code-gen-exec': 'Compute (19 * 7) + 3 in the sandbox and show the tool result.',
   'incident-response': 'api service errors spiked; pull logs and suggest mitigations.',
 };

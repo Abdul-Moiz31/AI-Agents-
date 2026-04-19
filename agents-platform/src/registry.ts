@@ -14,7 +14,7 @@ import { prReviewAgent } from './agents/prReviewAgent.js';
 import { researchAgent } from './agents/researchAgent.js';
 import { salesOutreachAgent } from './agents/salesOutreachAgent.js';
 import { taskOrchestratorAgent } from './agents/taskOrchestratorAgent.js';
-import { runWithAgent } from './lib/runWithAgent.js';
+import { runWithAgent, type RunWithAgentOptions } from './lib/runWithAgent.js';
 
 export type AgentId =
   | 'pr-review'
@@ -142,7 +142,7 @@ export function getAgentEntry(id: AgentId): AgentRegistryEntry | undefined {
 export async function runAgentById(
   id: AgentId,
   message: string,
-  options?: { openaiApiKey?: string },
+  options?: RunWithAgentOptions,
 ): Promise<string> {
   const entry = byId.get(id);
   if (!entry) throw new Error(`Unknown agent: ${id}`);

@@ -3,6 +3,7 @@ import { AppStateProvider } from './context/AppStateContext.js';
 import { AppShell } from './layout/AppShell.js';
 import { ConsolePage } from './pages/ConsolePage.js';
 import { HomePage } from './pages/HomePage.js';
+import { RagPage } from './pages/RagPage.js';
 import { ToolsPage } from './pages/ToolsPage.js';
 
 export default function App() {
@@ -13,6 +14,7 @@ export default function App() {
           <Route element={<AppShell />}>
             <Route index element={<HomePage />} />
             <Route path="console" element={<ConsolePage />} />
+            <Route path="rag" element={<RagPage />} />
             <Route path="tools" element={<ToolsPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>

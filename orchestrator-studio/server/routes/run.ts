@@ -12,6 +12,8 @@ import { Semaphore } from '../utils/semaphore.js';
 const bodySchema = z.object({
   agentId: z.string().min(1),
   message: z.string().min(1).max(200_000),
+  /** Browser session corpus (user uploads); only used for `knowledge-rag`. */
+  ragCollectionId: z.string().uuid().optional(),
 });
 
 export function runRouter(cfg: AppConfig): Router {
@@ -30,7 +32,7 @@ export function runRouter(cfg: AppConfig): Router {
         return;
       }
 
-      const { agentId, message } = parsed.data;
+      const { agentId, message, ragCollectionId } = parsed.data;
       if (!isValidAgentId(agentId)) {
         res.status(400).json({
           error: `Unknown agentId: ${agentId}`,
@@ -72,11 +74,12 @@ export function runRouter(cfg: AppConfig): Router {
       const release = await semaphore.acquire();
       const t0 = Date.now();
       try {
+        const runOpts = ragCollectionId ? { ragCollectionId } : undefined;
         const output = await runWithTimeout(
           () =>
             bearer
-              ? executeAgentRun(agentId as AgentId, message, { openaiApiKey: bearer })
-              : executeAgentRun(agentId as AgentId, message),
+              ? executeAgentRun(agentId as AgentId, message, { openaiApiKey: bearer, ...runOpts })
+              : executeAgentRun(agentId as AgentId, message, runOpts),
           cfg.runSoftTimeoutMs,
         );
         const body: RunAgentResponseBody = {

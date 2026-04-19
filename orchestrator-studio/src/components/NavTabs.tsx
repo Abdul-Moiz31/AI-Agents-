@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 const tabs: { to: string; end?: boolean; label: string; hint: string }[] = [
   { to: '/', end: true, label: 'Home', hint: 'Overview' },
   { to: '/console', label: 'Console', hint: 'Unified agent' },
+  { to: '/rag', label: 'RAG', hint: 'Knowledge base' },
   { to: '/tools', label: 'Tools', hint: 'Specialists' },
 ];
 

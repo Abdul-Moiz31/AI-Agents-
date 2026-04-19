@@ -12,6 +12,12 @@ export const HOME_FEATURES: HomeFeature[] = [
       'One natural-language brief routes through the task orchestrator, which delegates to PR review, research, content, support, and incident agents as needed.',
   },
   {
+    tag: 'RAG',
+    title: 'Knowledge base',
+    summary:
+      'Dedicated tab for retrieval-augmented Q&A: inspect the demo corpus, ask questions, and read answers with a required Sources section. Same agent as Knowledge RAG in Tools.',
+  },
+  {
     tag: 'Tools',
     title: 'Specialist surface',
     summary:
@@ -53,7 +59,7 @@ export const HOME_STEPS: HomeStep[] = [
   {
     step: '01',
     title: 'Choose your mode',
-    body: 'Use the Console for cross-cutting goals, or Tools when you already know which agent should run.',
+    body: 'Use the Console for cross-cutting goals, the RAG tab for corpus-grounded Q&A, or Tools when you already know which specialist should run.',
   },
   {
     step: '02',

@@ -1,0 +1,44 @@
+{
+  "chunks": [
+    {
+      "id": "guide§overview",
+      "source": "platform-guide.md",
+      "text": "Orchestrator Studio is a web command center for the agents-platform package. The monorepo has two main parts: agents-platform (TypeScript agents, tools, prompts, registry) and orchestrator-studio (React UI + Express API). Users run natural-language tasks against specialist agents or a unified task orchestrator."
+    },
+    {
+      "id": "guide§tabs",
+      "source": "platform-guide.md",
+      "text": "The UI has four primary areas. Home: overview and quick links. Console: always runs the task-orchestrator agent for cross-cutting goals that may delegate to many specialists. RAG: runs only knowledge-rag for retrieval-augmented Q&A over a built-in guide, sample snippets, and your uploads. Tools: pick one specialist agent (PR review, SQL, research, fraud, etc.) from a grid."
+    },
+    {
+      "id": "guide§flow",
+      "source": "platform-guide.md",
+      "text": "End-to-end flow: (1) User writes a brief or question in the UI. (2) Browser calls POST /api/run or /api/run/demo with agentId and message. (3) Optional ragCollectionId is sent for knowledge-rag so user-uploaded chunks are included. (4) Express validates, rate-limits, and runs the OpenAI Agents SDK with the selected agent. (5) Tools such as retrieve_context may run. (6) The model returns final text; the UI shows transcript, duration, and request id."
+    },
+    {
+      "id": "guide§rag",
+      "source": "platform-guide.md",
+      "text": "RAG in this product: the knowledge-rag agent calls retrieve_context, which scores chunks by token overlap (BM25-style baseline). Chunks always include a platform guide (this document), sample handbook-style demo snippets, and any text or PDF you uploaded in the RAG tab for your browser session. Answers should cite chunk ids and sources. Production systems often add embeddings and a vector database."
+    },
+    {
+      "id": "guide§uploads",
+      "source": "platform-guide.md",
+      "text": "Uploads: each RAG tab gets a collection id in sessionStorage. Plain text, Markdown, or PDF files are chunked on the server and stored under orchestrator-studio/data/rag-collections on the API host. PDFs are text-extracted (layout may be imperfect). Durable deploys need persistent disk or external storage."
+    },
+    {
+      "id": "guide§api-keys",
+      "source": "platform-guide.md",
+      "text": "Authentication for models: users can paste an OpenAI API key in the UI (BYOK, stored in sessionStorage and sent as Authorization Bearer to the same-origin API). Alternatively the server may expose one free demo run via POST /api/run/demo with a signed cookie, or ALLOW_ANONYMOUS_SERVER_RUN with OPENAI_API_KEY on the server (not recommended for public production)."
+    },
+    {
+      "id": "guide§http-api",
+      "source": "platform-guide.md",
+      "text": "HTTP API highlights: GET /api/agents lists agents. GET /api/session describes demo and anonymous-run flags. GET /api/rag/corpus returns built-in and user chunk previews. POST /api/rag/upload adds text; multipart upload supports PDF. POST /api/run executes an agent. Health and meta endpoints exist for ops."
+    },
+    {
+      "id": "guide§concepts",
+      "source": "platform-guide.md",
+      "text": "Key concepts: Agent (instructions + tools), tool (typed parameters + execute), registry (agent ids), Runner (SDK execution), retrieval-augmented generation (retrieve evidence then generate), chunking (split documents for search), and citation (Sources section tying answers to chunk ids)."
+    }
+  ]
+}

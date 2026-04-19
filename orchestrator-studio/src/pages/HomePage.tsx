@@ -27,12 +27,15 @@ export function HomePage() {
           </h2>
           <p className="home__lede">
             The <strong>Console</strong> runs a single orchestrator that delegates to PR review, research,
-            support, incidents, and more. The <strong>Tools</strong> tab exposes each specialist directly for
-            focused, repeatable tasks.
+            support, incidents, and more. The <strong>RAG</strong> tab is for knowledge-base Q&A with citations.
+            The <strong>Tools</strong> tab exposes each specialist directly for focused, repeatable tasks.
           </p>
           <div className="home__cta">
             <Link to="/console" className="home__btn home__btn--primary">
               Open console
+            </Link>
+            <Link to="/rag" className="home__btn home__btn--ghost">
+              Knowledge RAG
             </Link>
             <Link to="/tools" className="home__btn home__btn--ghost">
               Browse tools

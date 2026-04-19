@@ -1,6 +1,7 @@
 import 'dotenv/config';
 
-export { runWithAgent } from './lib/runWithAgent.js';
+export { runWithAgent, type RunWithAgentOptions } from './lib/runWithAgent.js';
+export { ragRequestContext, type RagChunk } from './lib/ragRequestContext.js';
 export { loadPrompt } from './lib/loadPrompt.js';
 export * from './registry.js';
 

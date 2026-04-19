@@ -13,6 +13,12 @@ type Props = {
   /** Browser session has a BYOK key — show a way to replace it if it was wrong. */
   hasStoredApiKey?: boolean;
   onChangeApiKey?: () => void;
+  memoTitle?: string;
+  memoHint?: string;
+  briefPlaceholder?: string;
+  transcriptTitle?: string;
+  submitLabel?: string;
+  submitWorkingLabel?: string;
 };
 
 export function Workspace({
@@ -27,6 +33,12 @@ export function Workspace({
   lastRun,
   hasStoredApiKey = false,
   onChangeApiKey,
+  memoTitle = 'Brief',
+  memoHint = 'Instructions for the active agent.',
+  briefPlaceholder = 'State the objective, constraints, and any identifiers the tools should use.',
+  transcriptTitle = 'Transcript',
+  submitLabel = 'Execute run',
+  submitWorkingLabel = 'Working',
 }: Props) {
   const serverKeyMissing = meta && !meta.openaiConfigured;
 
@@ -45,15 +57,15 @@ export function Workspace({
         <div className="memo__inner">
           <header className="memo__head">
             <h2 id="memo-heading" className="memo__title">
-              Brief
+              {memoTitle}
             </h2>
-            <p className="memo__hint">Instructions for the active agent.</p>
+            <p className="memo__hint">{memoHint}</p>
           </header>
           <textarea
             className="memo__field"
             value={message}
             onChange={(e) => onMessageChange(e.target.value)}
-            placeholder="State the objective, constraints, and any identifiers the tools should use."
+            placeholder={briefPlaceholder}
             spellCheck={false}
             rows={6}
           />
@@ -74,10 +86,10 @@ export function Workspace({
               {loading ? (
                 <>
                   <span className="memo__spinner" aria-hidden />
-                  Working
+                  {submitWorkingLabel}
                 </>
               ) : (
-                'Execute run'
+                submitLabel
               )}
             </button>
           </footer>
@@ -87,7 +99,7 @@ export function Workspace({
       <section className="transcript" aria-labelledby="transcript-heading">
         <header className="transcript__head">
           <h2 id="transcript-heading" className="transcript__title">
-            Transcript
+            {transcriptTitle}
           </h2>
           {lastRun ? (
             <dl className="transcript__meta">

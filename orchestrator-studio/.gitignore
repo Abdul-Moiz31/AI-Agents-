@@ -6,6 +6,9 @@ node_modules/
 .env.*
 !.env.example
 
+# User-uploaded RAG chunks (per collection id)
+data/rag-collections/
+
 # Build outputs
 dist/
 build/

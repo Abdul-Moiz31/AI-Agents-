@@ -27,3 +27,26 @@ export type ApiErrorBody = {
   error: unknown;
   requestId?: string;
 };
+
+export type RagCorpusChunk = {
+  id: string;
+  source: string;
+  textPreview: string;
+};
+
+export type RagUploadedDocument = {
+  documentId: string;
+  title: string;
+  uploadedAt: string;
+  chunkCount: number;
+};
+
+export type RagCorpusResponse = {
+  chunks: RagCorpusChunk[];
+  demoChunkCount?: number;
+  userChunkCount?: number;
+  uploadedDocuments?: RagUploadedDocument[];
+  indexKind: string;
+  description?: string;
+  error?: string;
+};

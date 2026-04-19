@@ -1,19 +1,17 @@
 import { tool } from '@openai/agents';
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
-
-const packageRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+import { loadDemoRagChunks } from '../lib/loadDemoRagChunks.js';
+import { ragRequestContext } from '../lib/ragRequestContext.js';
 
 export const retrieveContextTool = tool({
   name: 'retrieve_context',
   description:
-    'Retrieve top-k knowledge chunks for RAG (mock BM25-ish: token overlap; swap for Pinecone/Weaviate).',
+    'Retrieve top-k knowledge chunks for RAG (BM25-ish token overlap on demo + any user-uploaded docs for this session).',
   parameters: z.object({ question: z.string(), topK: z.number().min(1).max(8).default(4) }),
   execute: async ({ question, topK }) => {
-    const raw = readFileSync(join(packageRoot, 'src', 'data', 'rag-chunks.json'), 'utf-8');
-    const { chunks } = JSON.parse(raw) as { chunks: { id: string; source: string; text: string }[] };
+    const demo = loadDemoRagChunks();
+    const extra = ragRequestContext.getStore()?.extraChunks ?? [];
+    const chunks = [...demo, ...extra];
     const qTokens = new Set(
       question
         .toLowerCase()

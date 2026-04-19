@@ -34,6 +34,7 @@ Place PNG/WebP files in [`docs/screenshots/`](./docs/screenshots/) (this folder 
 orchestrator-studio/
 ├── README.md
 ├── docs/
+│   ├── RAG.md                # RAG concepts, code path, production notes
 │   └── screenshots/          # optional UI captures (see Screenshots)
 ├── index.html
 ├── vite.config.ts            # dev server; proxies /api → backend
@@ -52,7 +53,7 @@ orchestrator-studio/
     ├── main.tsx
     ├── App.tsx
     ├── layout/AppShell.tsx
-    ├── pages/                # HomePage, ConsolePage, ToolsPage
+    ├── pages/                # HomePage, ConsolePage, RagPage, ToolsPage
     ├── context/AppStateContext.tsx
     ├── hooks/useAgentRunner.ts
     ├── theme/ThemeProvider.tsx
@@ -145,17 +146,18 @@ The root `npm start` runs the studio (not `demo-haiku.ts` — use `npm run start
 2. Open **http://localhost:5173**.
 3. Check the **masthead**: **Server key · demo run** means `OPENAI_API_KEY` is loaded (demo + optional anonymous run). **BYOK — your key on run** means clients must supply a key (or you add server key later).
 
-### Navigation (three tabs)
+### Navigation (tabs)
 
 | Route | Tab | Use when |
 | ----- | --- | -------- |
-| `/` | **Home** | Read overview, capability map, and jump to Console or Tools |
+| `/` | **Home** | Read overview, capability map, and jump to Console, RAG, or Tools |
 | `/console` | **Console** | One **natural-language goal** that should **span multiple skills** (research + content + incident, etc.). Always uses the **`task-orchestrator`** agent. |
+| `/rag` | **RAG** | **Knowledge-base Q&A**: retrieval + grounded answer with **Sources**. Always uses **`knowledge-rag`**. See [`docs/RAG.md`](./docs/RAG.md). |
 | `/tools` | **Tools** | **One specialist** at a time (PR review, RAG, SQL, support, …). Pick a tile, edit the **Brief**, run. |
 
-### Running a job (Console or Tools)
+### Running a job (Console, RAG, or Tools)
 
-1. Go to **Console** or **Tools**.
+1. Go to **Console**, **RAG**, or **Tools**.
 2. The **Brief** field loads a **sample prompt** when you change agent (Tools) or open Console.
 3. Edit the text: include **goal**, **constraints**, and any **IDs** (order id, repo/PR, transaction id, etc.) the tools expect.
 4. Click **Execute run**. The client picks a path in order: **saved key** (session storage) → **anonymous server run** (only if `ALLOW_ANONYMOUS_SERVER_RUN=true` and server key exists) → **one free demo** (`POST /api/run/demo`, cookie) → **API key modal** (BYOK).
@@ -173,6 +175,10 @@ Use **Day / Night** in the masthead. Preference is stored as `orchestrator-theme
 | `GET` | `/api/ready` | Readiness info (`serverOpenAiConfigured`); does **not** 503 when key missing |
 | `GET` | `/api/meta` | Version, uptime, env |
 | `GET` | `/api/session` | Demo availability, whether demo cookie consumed, anonymous-run flag |
+| `GET` | `/api/rag/corpus?collectionId=` | Demo + user-upload chunk previews and document list for the RAG tab |
+| `POST` | `/api/rag/upload` | Add plain text to a session corpus (`collectionId`, `title`, `text`) |
+| `POST` | `/api/rag/upload-pdf` | `multipart/form-data`: `file` (PDF), `collectionId`, `title` |
+| `POST` | `/api/rag/remove-document` | Remove one uploaded document (`collectionId`, `documentId`) |
 | `GET` | `/api/agents` | List agents |
 | `GET` | `/api/agents/:id` | One agent |
 | `POST` | `/api/run/demo` | One free run on server key; sets signed httpOnly cookie |
@@ -183,11 +189,12 @@ Use **Day / Night** in the masthead. Preference is stored as `orchestrator-theme
 ```json
 {
   "agentId": "task-orchestrator",
-  "message": "Your task"
+  "message": "Your task",
+  "ragCollectionId": "optional-uuid-for-knowledge-rag-user-uploads"
 }
 ```
 
-**Success:** `{ "output", "requestId", "durationMs", "mode"? }` (`mode`: `demo` | `byok` | `server`).
+**Success:** `{ "output", "requestId", "durationMs", "mode"? }` (`mode`: `demo` | `byok` | `server`). Omit `ragCollectionId` unless `agentId` is `knowledge-rag` and you use the RAG tab’s session corpus.
 
 **curl examples:**
 
